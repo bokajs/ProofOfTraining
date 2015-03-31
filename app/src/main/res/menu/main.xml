@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools" tools:context=".MainActivity">
+    <item android:id="@+id/action_menu2_away"
+        android:src="@drawable/ic_corp_statusbar_icon"
+        android:title="@string/menu2_away"
+        android:contentDescription="@string/menu2_away"
+        app:showAsAction="ifRoom|withText" />
+    <item android:id="@+id/action_activity_add"
+        android:icon="@drawable/ic_action_new"
+        android:title="@string/action_activity_add"
+        app:showAsAction="ifRoom|withText" />
+
+    <item android:id="@+id/action_example" android:title="@string/action_example"
+        app:showAsAction="never" />
+    <item android:id="@+id/action_settings" android:title="@string/action_settings"
+        android:orderInCategory="100" app:showAsAction="never" />
+</menu>

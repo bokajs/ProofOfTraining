@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="all">
+        <item android:id="@+id/action_leave"
+            android:title="@string/leave" />
+        <item android:id="@+id/sick"
+            android:title="@string/sick" />
+        <item android:id="@+id/other"
+            android:title="@string/other" />
+    </group>
+</menu>
