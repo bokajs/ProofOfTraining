@@ -1,6 +1,7 @@
 package com.example.proofoftraining;
 
 import android.app.Activity;
+import android.content.Context;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
@@ -15,12 +16,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.content.Intent;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ListView;
 
 import com.example.proofoftraining.model.DbHelper;
 import com.example.proofoftraining.model.activity;
 import com.example.proofoftraining.model.day;
 import com.example.proofoftraining.model.workweek;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,14 +45,27 @@ public class MainActivity extends ActionBarActivity
     // Database Helper
     DbHelper db;
 
+    //listView_activities implementation
+    private ListView listView_activities;
+    private MyAdapter_activities myAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        listView_activities = (ListView) findViewById(R.id.listView_activities);
+        listView_activities.setItemsCanFocus(true);
+        myAdapter = new MyAdapter_activities();
+        listView_activities.setAdapter(myAdapter);
+
         db = new DbHelper(getApplicationContext());
 
-        mNavigationDrawerFragment.weeks=db.getCountWorkweek();
+        try {
+            mNavigationDrawerFragment.weeks=db.getCountWorkweek();
+        }catch (NullPointerException  e) {
+            //first start
+        }
 
         // creating and insert workweek
         workweek week0 = new workweek(0);
@@ -83,6 +101,70 @@ public class MainActivity extends ActionBarActivity
         AddTab("Sat", "Saturday");
         AddTab("Sun", "Sunday");
 
+    }
+
+    public class MyAdapter_activities extends BaseAdapter {
+        private LayoutInflater mInflater;
+        public ArrayList myItems = new ArrayList();
+
+        public MyAdapter_activities() {
+            mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            for (int i = 0; i < 20; i++) {
+                ListItem listItem = new ListItem();
+                listItem.caption = "Caption" + i;
+                myItems.add(listItem);
+            }
+            notifyDataSetChanged();
+        }
+
+        public int getCount() {
+            return myItems.size();
+        }
+
+        public Object getItem(int position) {
+            return position;
+        }
+
+        public long getItemId(int position) {
+            return position;
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+                holder = new ViewHolder();
+                convertView = mInflater.inflate(R.layout.item_activities, null);
+                holder.caption = (EditText) convertView
+                        .findViewById(R.id.ItemCaption);
+                convertView.setTag(holder);
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
+            //Fill EditText with the value you have in data source
+            holder.caption.setText(myItems.get(position).caption);
+            holder.caption.setId(position);
+
+            //we need to update adapter once we finish with editing
+            holder.caption.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (!hasFocus){
+                        final int position = v.getId();
+                        final EditText Caption = (EditText) v;
+                        myItems.get(position).caption = Caption.getText().toString();
+                    }
+                }
+            });
+
+            return convertView;
+        }
+    }
+
+    class ViewHolder {
+        EditText caption;
+    }
+
+    class ListItem {
+        String caption;
     }
 
     @Override
