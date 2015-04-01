@@ -47,7 +47,7 @@ public class MainActivity extends ActionBarActivity
 
     //listView_activities implementation
     private ListView listView_activities;
-    private MyAdapter_activities myAdapter;
+    private MyAdapter myAdapter_activities;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,15 +56,15 @@ public class MainActivity extends ActionBarActivity
 
         listView_activities = (ListView) findViewById(R.id.listView_activities);
         listView_activities.setItemsCanFocus(true);
-        myAdapter = new MyAdapter_activities();
-        listView_activities.setAdapter(myAdapter);
+        myAdapter_activities = new MyAdapter();
+        listView_activities.setAdapter(myAdapter_activities);
 
         db = new DbHelper(getApplicationContext());
 
         try {
             mNavigationDrawerFragment.weeks=db.getCountWorkweek();
         }catch (NullPointerException  e) {
-            //first start
+            //first program start
         }
 
         // creating and insert workweek
@@ -103,11 +103,11 @@ public class MainActivity extends ActionBarActivity
 
     }
 
-    public class MyAdapter_activities extends BaseAdapter {
+    public class MyAdapter extends BaseAdapter {
         private LayoutInflater mInflater;
         public ArrayList myItems = new ArrayList();
 
-        public MyAdapter_activities() {
+        public MyAdapter() {
             mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             for (int i = 0; i < 20; i++) {
                 ListItem listItem = new ListItem();
@@ -141,7 +141,7 @@ public class MainActivity extends ActionBarActivity
                 holder = (ViewHolder) convertView.getTag();
             }
             //Fill EditText with the value you have in data source
-            holder.caption.setText(myItems.get(position).caption);
+            holder.caption.setText(((ListItem)myItems.get(position)).caption);
             holder.caption.setId(position);
 
             //we need to update adapter once we finish with editing
@@ -150,7 +150,7 @@ public class MainActivity extends ActionBarActivity
                     if (!hasFocus){
                         final int position = v.getId();
                         final EditText Caption = (EditText) v;
-                        myItems.get(position).caption = Caption.getText().toString();
+                        ((ListItem)myItems.get(position)).caption = Caption.getText().toString();
                     }
                 }
             });
