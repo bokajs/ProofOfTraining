@@ -15,5 +15,6 @@
     <string name="sick">sick</string>
     <string name="other">other</string>
     <string name="menu2_away">away</string>
+    <string name="activity_hours_default">1</string>
 
 </resources>

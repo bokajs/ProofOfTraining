@@ -45,19 +45,12 @@ public class MainActivity extends ActionBarActivity
     // Database Helper
     DbHelper db;
 
-    //listView_activities implementation
-    private ListView listView_activities;
-    private MyAdapter myAdapter_activities;
+    private ActivitiesListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        listView_activities = (ListView) findViewById(R.id.listView_activities);
-        listView_activities.setItemsCanFocus(true);
-        myAdapter_activities = new MyAdapter();
-        listView_activities.setAdapter(myAdapter_activities);
 
         db = new DbHelper(getApplicationContext());
 
@@ -67,6 +60,7 @@ public class MainActivity extends ActionBarActivity
             //first program start
         }
 
+     /* Test
         // creating and insert workweek
         workweek week0 = new workweek(0);
         long week0_id = db.createWorkweek(week0);
@@ -81,7 +75,7 @@ public class MainActivity extends ActionBarActivity
         activity activity0 = new activity(0,0);
         long activity0_id = db.createActivity(activity0);
 
-        //List<workweek> workweeks = db.getAllWorkweeks();
+        //List<workweek> workweeks = db.getAllWorkweeks(); */
 
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -101,70 +95,6 @@ public class MainActivity extends ActionBarActivity
         AddTab("Sat", "Saturday");
         AddTab("Sun", "Sunday");
 
-    }
-
-    public class MyAdapter extends BaseAdapter {
-        private LayoutInflater mInflater;
-        public ArrayList myItems = new ArrayList();
-
-        public MyAdapter() {
-            mInflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            for (int i = 0; i < 20; i++) {
-                ListItem listItem = new ListItem();
-                listItem.caption = "Caption" + i;
-                myItems.add(listItem);
-            }
-            notifyDataSetChanged();
-        }
-
-        public int getCount() {
-            return myItems.size();
-        }
-
-        public Object getItem(int position) {
-            return position;
-        }
-
-        public long getItemId(int position) {
-            return position;
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder holder;
-            if (convertView == null) {
-                holder = new ViewHolder();
-                convertView = mInflater.inflate(R.layout.item_activities, null);
-                holder.caption = (EditText) convertView
-                        .findViewById(R.id.ItemCaption);
-                convertView.setTag(holder);
-            } else {
-                holder = (ViewHolder) convertView.getTag();
-            }
-            //Fill EditText with the value you have in data source
-            holder.caption.setText(((ListItem)myItems.get(position)).caption);
-            holder.caption.setId(position);
-
-            //we need to update adapter once we finish with editing
-            holder.caption.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-                public void onFocusChange(View v, boolean hasFocus) {
-                    if (!hasFocus){
-                        final int position = v.getId();
-                        final EditText Caption = (EditText) v;
-                        ((ListItem)myItems.get(position)).caption = Caption.getText().toString();
-                    }
-                }
-            });
-
-            return convertView;
-        }
-    }
-
-    class ViewHolder {
-        EditText caption;
-    }
-
-    class ListItem {
-        String caption;
     }
 
     @Override
@@ -228,6 +158,11 @@ public class MainActivity extends ActionBarActivity
             // decide what to show in the action bar.
             getMenuInflater().inflate(R.menu.main, menu);
             restoreActionBar();
+
+            //Set up the Activity List
+            setupActivityListViewAdapter();
+            setupAddActivityButton();
+
             return true;
         }
         return super.onCreateOptionsMenu(menu);
@@ -303,7 +238,8 @@ public class MainActivity extends ActionBarActivity
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
-            return rootView;
+
+           return rootView;
         }
 
         @Override
@@ -314,4 +250,22 @@ public class MainActivity extends ActionBarActivity
         }
     }
 
+    //ActivityList
+    public void removeActivityOnClickHandler(View v) {
+        activity itemToRemove = (activity)v.getTag();
+        adapter.remove(itemToRemove);
+    }
+    private void setupActivityListViewAdapter() {
+        adapter = new ActivitiesListAdapter(MainActivity.this, R.layout.item_activities, new ArrayList<activity>());
+        ListView ActivitiesListView = (ListView)findViewById(R.id.listView_activities);
+        ActivitiesListView.setAdapter(adapter);
+    }
+    private void setupAddActivityButton() {
+        /*findViewById(R.id.action_activity_add).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                adapter.insert(new activity(0,0), 0); //Test activity(0,0)
+            }
+        });*/
+    }
 }
