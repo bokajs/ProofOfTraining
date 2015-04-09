@@ -1,5 +1,6 @@
 package com.example.proofoftraining;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.app.Activity;
 import android.support.v7.app.ActionBar;
@@ -56,7 +57,7 @@ public class NavigationDrawerFragment extends Fragment {
     private ListView mDrawerListView;
     private View mFragmentContainerView;
 
-    private int mCurrentSelectedPosition = 0;
+    private int mCurrentSelectedPosition = 1;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
@@ -79,6 +80,8 @@ public class NavigationDrawerFragment extends Fragment {
 
         // Select either the default item (0) or the last selected item.
         selectItem(mCurrentSelectedPosition);
+
+
     }
 
     @Override
@@ -100,14 +103,19 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
 
-
+        //make the list of weeks for the drawer-menu, array [0] is the Add-button
+        weeks=5;
         String[] week  = new String[weeks+1];
-        for(int i=0; i<week.length; i++) week[i]= getString(R.string.title_section)+" "+(i+1);
+        week[0]= "Add Week";
+        if (weeks!=0)
+        for(int i=1; i<week.length; i++) week[i]= getString(R.string.title_section)+" "+(i);
+
         mDrawerListView.setAdapter(new ArrayAdapter<String>(
                 getActionBar().getThemedContext(),
                 android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1,
                 week));
+
         mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
@@ -280,5 +288,12 @@ public class NavigationDrawerFragment extends Fragment {
          * Called when an item in the navigation drawer is selected.
          */
         void onNavigationDrawerItemSelected(int position);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if ((requestCode == MainActivity.ACTIVITY_RESULT_REQUEST_SUB) && (resultCode == Activity.RESULT_OK))
+             mDrawerListView.setItemChecked(1, true);
     }
 }

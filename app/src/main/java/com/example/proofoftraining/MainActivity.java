@@ -26,6 +26,7 @@ import com.example.proofoftraining.model.day;
 import com.example.proofoftraining.model.workweek;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -47,6 +48,15 @@ public class MainActivity extends ActionBarActivity
 
     private ActivitiesListAdapter adapter;
 
+    //EXTRA_MESSAGE of the changeWorkweekActivity
+    public static String EXTRA_MESSAGE_week_ID ="com.example.proofoftraining.week.id";
+    public static String EXTRA_MESSAGE_week_start ="com.example.proofoftraining.week.start";
+    public static String EXTRA_MESSAGE_week_end ="com.example.proofoftraining.week.end";
+    public static String EXTRA_MESSAGE_year_of_training_training ="com.example.proofoftraining.week.year";
+    public static String EXTRA_MESSAGE_comment ="com.example.proofoftraining.week.comment";
+    public static String EXTRA_MESSAGE_week_new ="com.example.proofoftraining.week.new"; //1 for a new week
+    public static int ACTIVITY_RESULT_REQUEST_SUB = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +64,7 @@ public class MainActivity extends ActionBarActivity
 
         db = new DbHelper(getApplicationContext());
 
+        //if not the first the program start, set the count of weeks of the drawer-menu
         try {
             mNavigationDrawerFragment.weeks=db.getCountWorkweek();
         }catch (NullPointerException  e) {
@@ -104,11 +115,38 @@ public class MainActivity extends ActionBarActivity
         fragmentManager.beginTransaction()
                 .replace(R.id.container, PlaceholderFragment.newInstance(position + 1))
                 .commit();
+
+        //Add Week position -> create changeWorkweekActivity and send information about the workweek
+        if (position==0) {
+            Intent intent = new Intent(this, changeWorkweekActivity.class);
+            intent.putExtra(EXTRA_MESSAGE_week_ID, 0);
+            intent.putExtra(EXTRA_MESSAGE_week_start, 0);
+            //intent.putExtra(EXTRA_MESSAGE_week_end, 0);
+            intent.putExtra(EXTRA_MESSAGE_year_of_training_training, 0);
+            intent.putExtra(EXTRA_MESSAGE_comment, 0);
+            intent.putExtra(EXTRA_MESSAGE_week_new, "1");
+            startActivityForResult(intent, ACTIVITY_RESULT_REQUEST_SUB);
+        }
+    }
+
+    //Callback from the changeWorkweekActivity with new workweek information
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        long week_ID = Long.parseLong(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_week_ID));
+        workweek workweek = new workweek(week_ID);
+        workweek.setWeek_start(workweek.dateFormat().format(new Date(Long.valueOf((String) changeWorkweekActivity.EXTRA_MESSAGE_week_start))));
+        //workweek.setWeek_end(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_week_end));
+        workweek.setYear_of_training(Integer.parseInt(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_year_of_training_training)));
+        workweek.setComment(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_comment));
+
+        /*if (db.getWorkweek(week_ID)!=null)
+            db.updateWorkweek(workweek);
+        else
+            db.createWorkweek(workweek);*/
     }
 
     public void onSectionAttached(int number) {
-                mTitle = getString(R.string.title_section)+" "+number;
-
+        if (number==1) mTitle = "Add a Week!";
+        else mTitle = getString(R.string.title_section)+" "+(number-1);
     }
 
     public void AddTab(String name, String description) {
@@ -161,7 +199,6 @@ public class MainActivity extends ActionBarActivity
 
             //Set up the Activity List
             setupActivityListViewAdapter();
-            setupAddActivityButton();
 
             return true;
         }
@@ -203,6 +240,12 @@ public class MainActivity extends ActionBarActivity
             Intent intent = new Intent(this, InfoActivity.class);
             startActivity(intent);
 
+            return true;
+        }
+
+        if (id == R.id.action_activity_add) {
+            //Ads a new activity
+            adapter.insert(new activity(db.getCountActivities()+1,0), 0); //Test activity(0,0)
             return true;
         }
 
@@ -260,12 +303,5 @@ public class MainActivity extends ActionBarActivity
         ListView ActivitiesListView = (ListView)findViewById(R.id.listView_activities);
         ActivitiesListView.setAdapter(adapter);
     }
-    private void setupAddActivityButton() {
-        /*findViewById(R.id.action_activity_add).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                adapter.insert(new activity(0,0), 0); //Test activity(0,0)
-            }
-        });*/
-    }
+
 }

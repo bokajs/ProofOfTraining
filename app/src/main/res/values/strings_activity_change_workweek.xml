@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="title_activity_change_workweek">changeWorkweek</string>
+    <string name="week_ID">Number:</string>
+    <string name="week_start">Start:</string>
+    <string name="week_end">End:</string>
+    <string name="year_of_training">Year:</string>
+    <string name="comment">Comment:</string>
+    <string name="save">save</string>
+    <string name="week_start_end">Week:</string>
+</resources>

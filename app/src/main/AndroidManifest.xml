@@ -21,10 +21,17 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
-
         <activity
             android:name=".InfoActivity"
             android:label="@string/title_activity_info" >
+        </activity>
+        <activity
+            android:name=".changeWorkweekActivity"
+            android:label="@string/title_activity_change_workweek"
+            android:parentActivityName=".MainActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.proofoftraining.MainActivity" />
         </activity>
     </application>
 

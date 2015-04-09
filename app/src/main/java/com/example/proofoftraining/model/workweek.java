@@ -69,4 +69,6 @@ public class workweek {
     public void setDays(ArrayList<day> days) {
         this.days = days;
     }
+
+    public SimpleDateFormat dateFormat() { return format_date; }
 }

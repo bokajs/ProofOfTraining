@@ -58,7 +58,7 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
     }
 
     private void setupItem(ActivitiesHolder holder) {
-        holder.hours.setText(holder.activities.getHours());
+        holder.hours.setText(String.valueOf(holder.activities.getHours()));
         holder.activity.setText(String.valueOf(holder.activities.getActivity()));
     }
 

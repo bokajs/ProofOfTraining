@@ -7,6 +7,8 @@
     tools:context="com.example.proofoftraining.InfoActivity">
 
     <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:textSize="20dp" />
 
 </RelativeLayout>

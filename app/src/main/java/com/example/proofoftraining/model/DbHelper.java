@@ -232,6 +232,14 @@ public class DbHelper extends SQLiteOpenHelper {
                 new String[] { String.valueOf(activity) });
     }
 
+    /*
+         * getting count for activities
+         */
+    public int getCountActivities() {
+        return getCount(TABLE_ACTIVITY);
+    }
+
+
     // ------------------------ "day" table methods ----------------//
 
     /*
@@ -538,5 +546,4 @@ public class DbHelper extends SQLiteOpenHelper {
         Date date = new Date();
         return dateFormat.format(date);
     }
-
 }
