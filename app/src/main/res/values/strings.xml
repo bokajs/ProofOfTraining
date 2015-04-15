@@ -18,5 +18,7 @@
     <string name="activity_hours_hint">1</string>
     <string name="activity_delete">delete</string>
     <string name="activity_activity_hint">activity description</string>
+    <string name="action_change_workweek">Change workweek</string>
+    <string name="hours_h">h</string>
 
 </resources>

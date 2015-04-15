@@ -8,6 +8,10 @@ import android.os.Parcelable;
  */
 public class workweekParcelable extends workweek implements Parcelable {
 
+    public workweekParcelable(long week_ID) {
+        super(week_ID);
+    }
+
     public static final Parcelable.Creator<workweekParcelable> CREATOR =
             new Parcelable.Creator<workweekParcelable>() {
                 public workweekParcelable createFromParcel(Parcel in) {
@@ -22,7 +26,7 @@ public class workweekParcelable extends workweek implements Parcelable {
     private workweekParcelable(Parcel in, long week_ID) {
         super(week_ID);
         week_start = in.readString();
-        week_end = in.readString();
+        //week_end = in.readString();
         year_of_training = in.readInt();
         comment = in.readString();
     }
@@ -32,7 +36,7 @@ public class workweekParcelable extends workweek implements Parcelable {
     public void writeToParcel(Parcel out, int flags) {
         out.writeLong(week_ID);
         out.writeString(week_start);
-        out.writeString(week_end);
+        //out.writeString(week_end);
         out.writeInt(year_of_training);
         out.writeString(comment);
     }
@@ -42,4 +46,3 @@ public class workweekParcelable extends workweek implements Parcelable {
         return 0;
     }
 }
-

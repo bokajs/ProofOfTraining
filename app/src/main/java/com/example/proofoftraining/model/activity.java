@@ -11,7 +11,7 @@ public class activity {
     String activity;
 
     //constructor
-    public activity(long activity_ID, int day_ID) {
+    public activity(long activity_ID, long day_ID) {
         this.activity_ID = activity_ID;
         this.day_ID = day_ID;
     }

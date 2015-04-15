@@ -30,7 +30,7 @@ import android.widget.Toast;
  */
 public class NavigationDrawerFragment extends Fragment {
 
-    int weeks;
+    //public int weeks;
 
     /**
      * Remember the position of the selected item.
@@ -57,7 +57,7 @@ public class NavigationDrawerFragment extends Fragment {
     private ListView mDrawerListView;
     private View mFragmentContainerView;
 
-    private int mCurrentSelectedPosition = 1;
+    public static int mCurrentSelectedPosition = 1;
     private boolean mFromSavedInstanceState;
     private boolean mUserLearnedDrawer;
 
@@ -103,20 +103,9 @@ public class NavigationDrawerFragment extends Fragment {
             }
         });
 
-        //make the list of weeks for the drawer-menu, array [0] is the Add-button
-        weeks=5;
-        String[] week  = new String[weeks+1];
-        week[0]= "Add Week";
-        if (weeks!=0)
-        for(int i=1; i<week.length; i++) week[i]= getString(R.string.title_section)+" "+(i);
+        //refresh mDrawerListView with count of week as string
+        update_mDrawerListView();
 
-        mDrawerListView.setAdapter(new ArrayAdapter<String>(
-                getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                week));
-
-        mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
         return mDrawerListView;
     }
 
@@ -295,5 +284,30 @@ public class NavigationDrawerFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if ((requestCode == MainActivity.ACTIVITY_RESULT_REQUEST_SUB) && (resultCode == Activity.RESULT_OK))
              mDrawerListView.setItemChecked(1, true);
+    }
+
+    //refresh the  Drawer menu
+    private void update_mDrawerListView() {
+        //make the list of weeks for the drawer-menu, array [0] is the Add-button
+        String[] week  = new String[MainActivity.weeks+1];
+        week[0]= "Add Week";
+        if (MainActivity.weeks!=0)
+            for(int i=1; i<week.length; i++) week[i]= getString(R.string.title_section)+" "+(i);
+
+        mDrawerListView.setAdapter(new ArrayAdapter<String>(
+                getActionBar().getThemedContext(),
+                android.R.layout.simple_list_item_activated_1,
+                android.R.id.text1,
+                week));
+
+        mDrawerListView.setItemChecked(mCurrentSelectedPosition, true);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(final Menu menu) {
+        //prevent an Add workweek loop
+        if (mCurrentSelectedPosition==0)
+            mCurrentSelectedPosition = 1;
+        update_mDrawerListView();
     }
 }

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -24,15 +25,15 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
 
     protected static final String LOG_TAG = ActivitiesListAdapter.class.getSimpleName();
 
-    private List<activity> items;
+    private List<activity> activity;
     private int layoutResourceId;
     private Context context;
 
-    public ActivitiesListAdapter(Context context, int layoutResourceId, List<activity> items) {
-        super(context, layoutResourceId, items);
+    public ActivitiesListAdapter(Context context, int layoutResourceId, List<activity> activity) {
+        super(context, layoutResourceId, activity);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
-        this.items = items;
+        this.activity = activity;
     }
 
     @Override
@@ -44,12 +45,14 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
         row = inflater.inflate(layoutResourceId, parent, false);
 
         holder = new ActivitiesHolder();
-        holder.activities = items.get(position);
+        holder.activities = activity.get(position);
         holder.removeActivityButton = (ImageButton)row.findViewById(R.id.activity_delete);
         holder.removeActivityButton.setTag(holder.activities);
 
         holder.hours = (TextView)row.findViewById(R.id.activity_hours);
+        setHoursTextListeners(holder);
         holder.activity = (TextView)row.findViewById(R.id.activity_activity);
+        setActivityTextChangeListener(holder);
 
         row.setTag(holder);
 
@@ -86,7 +89,7 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 try{
-                    holder.activities.setHours((int) Double.parseDouble(s.toString()));
+                    holder.activities.setHours(Integer.valueOf(s.toString()));
                 }catch (NumberFormatException e) {
                     Log.e(LOG_TAG, "error reading activity hour: " + s.toString());
                 }
@@ -96,5 +99,8 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
             @Override
             public void afterTextChanged(Editable s) { }
         });
+    }
+    public List<activity> getActivity() {
+        return activity;
     }
 }

@@ -2,28 +2,34 @@ package com.example.proofoftraining;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Parcelable;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.os.Bundle;
+import android.support.v7.widget.PopupMenu;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.support.v4.widget.DrawerLayout;
 import android.content.Intent;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.example.proofoftraining.model.DbHelper;
 import com.example.proofoftraining.model.activity;
 import com.example.proofoftraining.model.day;
 import com.example.proofoftraining.model.workweek;
+import com.example.proofoftraining.model.workweekParcelable;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,38 +52,35 @@ public class MainActivity extends ActionBarActivity
     // Database Helper
     DbHelper db;
 
-    private ActivitiesListAdapter adapter;
+    //count of week for the Drawer menu
+    public static int weeks;
+    //the activity list adapter
+    private ActivitiesListAdapter activitiesListAdapter;
+    //the yet in menus selected objects
+    private workweek selected_workweek;
+    private day selected_day;
 
     //EXTRA_MESSAGE of the changeWorkweekActivity
-    public static String EXTRA_MESSAGE_week_ID ="com.example.proofoftraining.week.id";
+    /*public static String EXTRA_MESSAGE_week_ID ="com.example.proofoftraining.week.id";
     public static String EXTRA_MESSAGE_week_start ="com.example.proofoftraining.week.start";
     public static String EXTRA_MESSAGE_week_end ="com.example.proofoftraining.week.end";
     public static String EXTRA_MESSAGE_year_of_training_training ="com.example.proofoftraining.week.year";
-    public static String EXTRA_MESSAGE_comment ="com.example.proofoftraining.week.comment";
+    public static String EXTRA_MESSAGE_comment ="com.example.proofoftraining.week.comment";*/
+    public static String EXTRA_MESSAGE_workweekParcelable="com.example.proofoftraining.workweek.parcelable";
     public static String EXTRA_MESSAGE_week_new ="com.example.proofoftraining.week.new"; //1 for a new week
     public static int ACTIVITY_RESULT_REQUEST_SUB = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //set up the DatabaseHelper
+        db = new DbHelper(getApplicationContext());
+        //set the count of week
+        MainActivity.weeks=db.getCountWorkweek();
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        db = new DbHelper(getApplicationContext());
-
-        //if not the first the program start, set the count of weeks of the drawer-menu
-        try {
-            mNavigationDrawerFragment.weeks=db.getCountWorkweek();
-        }catch (NullPointerException  e) {
-            //first program start
-        }
-
      /* Test
-        // creating and insert workweek
-        workweek week0 = new workweek(0);
-        long week0_id = db.createWorkweek(week0);
-        workweek week1 = new workweek(1);
-        long week1_id = db.createWorkweek(week1);
-
         // creating and insert day
         day day0 = new day(0,0);
         long day0_id = db.createDay(day0);
@@ -92,22 +95,24 @@ public class MainActivity extends ActionBarActivity
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
 
+
         // Set up the drawer.
         mNavigationDrawerFragment.setUp(
                 R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        //Add tabs to the tab-menu
-        AddTab("Mon", "Monday");
-        AddTab("Tue", "Tuesday");
-        AddTab("Wed", "Wednesday");
-        AddTab("Thu", "Thursday");
-        AddTab("Fri", "Friday");
-        AddTab("Sat", "Saturday");
-        AddTab("Sun", "Sunday");
+        //Add tabs to the tab-menu, the day menu
+        AddTab("Mon", "Monday",1);
+        AddTab("Tue", "Tuesday",2);
+        AddTab("Wed", "Wednesday",3);
+        AddTab("Thu", "Thursday",4);
+        AddTab("Fri", "Friday",5);
+        AddTab("Sat", "Saturday",6);
+        AddTab("Sun", "Sunday",7);
 
     }
 
+    //menu to select the week of work
     @Override
     public void onNavigationDrawerItemSelected(int position) {
         // update the main content by replacing fragments
@@ -117,31 +122,33 @@ public class MainActivity extends ActionBarActivity
                 .commit();
 
         //Add Week position -> create changeWorkweekActivity and send information about the workweek
-        if (position==0) {
+        //try to set selected_workweek from database, if not than add a week
+        if ((selected_workweek = db.getWorkweek(position))==null || position==0){
             Intent intent = new Intent(this, changeWorkweekActivity.class);
-            intent.putExtra(EXTRA_MESSAGE_week_ID, 0);
-            intent.putExtra(EXTRA_MESSAGE_week_start, 0);
-            //intent.putExtra(EXTRA_MESSAGE_week_end, 0);
-            intent.putExtra(EXTRA_MESSAGE_year_of_training_training, 0);
-            intent.putExtra(EXTRA_MESSAGE_comment, 0);
+            workweekParcelable workweekParcelable = new workweekParcelable(db.getCountWorkweek()+1);
+            intent.putExtra(EXTRA_MESSAGE_workweekParcelable, workweekParcelable);
             intent.putExtra(EXTRA_MESSAGE_week_new, "1");
             startActivityForResult(intent, ACTIVITY_RESULT_REQUEST_SUB);
+
+            //selected_workweek = new workweek(0);
         }
+        int a;
     }
 
-    //Callback from the changeWorkweekActivity with new workweek information
+    //Callback from the changeWorkweekActivity with new workweek object
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        long week_ID = Long.parseLong(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_week_ID));
-        workweek workweek = new workweek(week_ID);
-        workweek.setWeek_start(workweek.dateFormat().format(new Date(Long.valueOf((String) changeWorkweekActivity.EXTRA_MESSAGE_week_start))));
-        //workweek.setWeek_end(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_week_end));
-        workweek.setYear_of_training(Integer.parseInt(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_year_of_training_training)));
-        workweek.setComment(data.getStringExtra(changeWorkweekActivity.EXTRA_MESSAGE_comment));
+        final workweekParcelable workweek = data.getParcelableExtra(MainActivity.EXTRA_MESSAGE_workweekParcelable);
 
-        /*if (db.getWorkweek(week_ID)!=null)
+        if (db.getWorkweek(workweek.getWeek_ID())!=null)
             db.updateWorkweek(workweek);
         else
-            db.createWorkweek(workweek);*/
+            db.createWorkweek(workweek);
+
+        //update count of week, selected_week, mCurrentSelectedPosition and Title
+        MainActivity.weeks=db.getCountWorkweek();
+        selected_workweek=workweek;
+        NavigationDrawerFragment.mCurrentSelectedPosition= (int) selected_workweek.getWeek_ID();
+        onSectionAttached(NavigationDrawerFragment.mCurrentSelectedPosition+1);
     }
 
     public void onSectionAttached(int number) {
@@ -149,21 +156,28 @@ public class MainActivity extends ActionBarActivity
         else mTitle = getString(R.string.title_section)+" "+(number-1);
     }
 
-    public void AddTab(String name, String description) {
+    public void AddTab(String name, String description, final int weekday) {
         ActionBar actionBar = getSupportActionBar();
-        ActionBar.Tab $name = actionBar.newTab();
+        final ActionBar.Tab $name = actionBar.newTab();
         $name.setText(name)
                 .setContentDescription(description)
                 .setTabListener(
                         new ActionBar.TabListener() {
                             @Override
                             public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+                                if (selected_workweek != null)
+                                    if ((selected_day = db.getDay(weekday,selected_workweek.getWeek_ID()))==null) {
+                                        selected_day = new day(db.getCountDay()+1, weekday, selected_workweek.getWeek_ID());
+                                        db.createDay(selected_day);
 
+                                        //Set up the Activity List
+                                        setupActivityListViewAdapter();
+                                    }
                             }
 
                             @Override
                             public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-
+                                selected_day=null;
                             }
 
                             @Override
@@ -197,29 +211,13 @@ public class MainActivity extends ActionBarActivity
             getMenuInflater().inflate(R.menu.main, menu);
             restoreActionBar();
 
-            //Set up the Activity List
-            setupActivityListViewAdapter();
 
             return true;
         }
         return super.onCreateOptionsMenu(menu);
     }
 
-    public void onCreateContextMenu(ContextMenu menu, View v,
-
-                                    ContextMenu.ContextMenuInfo menuInfo) {
-
-        super.onCreateContextMenu(menu, v, menuInfo);
-
-        if (v.getId()==R.id.action_menu2_away) {
-
-            getMenuInflater().inflate(R.menu.main2_away , menu);
-
-        }
-
-    }
-
-    @Override
+   @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -227,6 +225,37 @@ public class MainActivity extends ActionBarActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
+       if (id == R.id.action_menu2_away) {
+           PopupMenu popup = new PopupMenu(this, findViewById(R.id.action_menu2_away));
+           MenuInflater inflater = popup.getMenuInflater();
+           inflater.inflate(R.menu.main2_away, popup.getMenu());
+           popup.show();
+
+           return true;
+       }
+
+       if (id == R.id.action_activity_add) {
+           //Ads a new activity
+           activity activity = new activity(db.getCountActivities()+1,selected_day.getDay_ID());
+           activity.setActivity("");
+           activitiesListAdapter.insert(activity,0);
+           return true;
+       }
+
+       if (id == R.id.action_change_workweek) {
+           //change activity
+           Intent intent = new Intent(this, changeWorkweekActivity.class);
+           workweekParcelable workweekParcelable = (workweekParcelable) selected_workweek;
+           /*workweekParcelable workweekParcelable = new workweekParcelable(selected_workweek.getWeek_ID());
+           workweekParcelable.setWeek_start(selected_workweek.getWeek_start());
+           workweekParcelable.setYear_of_training(selected_workweek.getYear_of_training());
+           workweekParcelable.setComment(selected_workweek.getComment());*/
+           intent.putExtra(EXTRA_MESSAGE_workweekParcelable, workweekParcelable);
+           intent.putExtra(EXTRA_MESSAGE_week_new, "0");
+           startActivityForResult(intent, ACTIVITY_RESULT_REQUEST_SUB);
+           return true;
+       }
+
         if (id == R.id.action_settings) {
             //SettingsActivity;
             Intent intent = new Intent(this, SettingsActivity.class);
@@ -240,12 +269,6 @@ public class MainActivity extends ActionBarActivity
             Intent intent = new Intent(this, InfoActivity.class);
             startActivity(intent);
 
-            return true;
-        }
-
-        if (id == R.id.action_activity_add) {
-            //Ads a new activity
-            adapter.insert(new activity(db.getCountActivities()+1,0), 0); //Test activity(0,0)
             return true;
         }
 
@@ -296,12 +319,23 @@ public class MainActivity extends ActionBarActivity
     //ActivityList
     public void removeActivityOnClickHandler(View v) {
         activity itemToRemove = (activity)v.getTag();
-        adapter.remove(itemToRemove);
+        activitiesListAdapter.remove(itemToRemove);
     }
     private void setupActivityListViewAdapter() {
-        adapter = new ActivitiesListAdapter(MainActivity.this, R.layout.item_activities, new ArrayList<activity>());
-        ListView ActivitiesListView = (ListView)findViewById(R.id.listView_activities);
-        ActivitiesListView.setAdapter(adapter);
+        activitiesListAdapter = new ActivitiesListAdapter(MainActivity.this, R.layout.item_activities, db.getAllActivityByDay_ID(selected_day.getDay_ID()));
+        final ListView ActivitiesListView = (ListView)findViewById(R.id.listView_activities);
+        ActivitiesListView.setAdapter(activitiesListAdapter);
+
+        ActivitiesListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+
+                Toast.makeText(MainActivity.this,
+                        "Item in position " + position + " clicked", Toast.LENGTH_LONG).show();
+            }
+        });
     }
+
+
 
 }

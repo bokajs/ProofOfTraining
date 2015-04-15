@@ -14,8 +14,9 @@ public class day {
     private ArrayList<activity> activities = new ArrayList<activity>();
 
     //constructor
-    public day(long day_ID, long week_ID) {
+    public day(long day_ID ,int weekday, long week_ID) {
         this.day_ID = day_ID;
+        this.weekday = weekday;
         this.week_ID = week_ID;
     }
 
@@ -32,9 +33,9 @@ public class day {
         return weekday;
     }
 
-    public void setWeekday(int weekday) {
+    /*public void setWeekday(int weekday) {
         this.weekday = weekday;
-    }
+    }*/
 
     public int getLeave() {
         return leave;

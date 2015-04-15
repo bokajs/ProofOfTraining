@@ -20,7 +20,7 @@ import android.util.Log;
 /**
  * Created by bokajs on 06.02.2015.
  */
-public class DbHelper extends SQLiteOpenHelper {
+public class DbHelper extends SQLiteOpenHelper  {
     // Logcat tag
     private static final String LOG = "DatabaseHelper";
 
@@ -31,7 +31,7 @@ public class DbHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "proofoftraining";
 
     // Table Names
-    private static final String TABLE_ACTIVITY = "activitys";
+    private static final String TABLE_ACTIVITY = "activities";
     private static final String TABLE_DAY = "days";
     private static final String TABLE_WORKWEEK = "workweeks";
 
@@ -39,7 +39,7 @@ public class DbHelper extends SQLiteOpenHelper {
     //private static final String KEY_ID = "id";
     private static final String KEY_CREATED_AT = "created_at";
 
-    // ACTIVITY Table - column nmaes
+    // ACTIVITY Table - column names
     private static final String KEY_ACTIVITY_ID = "activity_id";
     private static final String KEY_HOURS = "hours";
     private static final String KEY_ACTIVITY = "activity";
@@ -54,7 +54,7 @@ public class DbHelper extends SQLiteOpenHelper {
     // WORKWEEK Table - column names
     private static final String KEY_WORKWEEK_ID = "workweek_id";
     private static final String KEY_WEEK_START = "week_start";
-    private static final String KEY_WEEK_END = "week_end";
+    //private static final String KEY_WEEK_END = "week_end";
     private static final String KEY_YEAR_OF_TRAINING = "year_of_training";
     private static final String KEY_COMMENT = "comment";
 
@@ -74,7 +74,7 @@ public class DbHelper extends SQLiteOpenHelper {
     // workweek table create statement
     private static final String CREATE_TABLE_WORKWEEK = "CREATE TABLE "
             + TABLE_WORKWEEK + "(" + KEY_WORKWEEK_ID + " INTEGER PRIMARY KEY,"
-            + KEY_WEEK_START + " DATETIME," + KEY_WEEK_END + " DATETIME,"
+            + KEY_WEEK_START + " INTEGER," //+ KEY_WEEK_END + " DATETIME,"
             + KEY_YEAR_OF_TRAINING + " INTEGER," + KEY_COMMENT + " TEXT,"
             + KEY_CREATED_AT + " DATETIME" + ")";
 
@@ -141,13 +141,15 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.e(LOG, selectQuery);
 
         Cursor c = db.rawQuery(selectQuery, null);
+        activity td = null;
 
         if (c != null)
-            c.moveToFirst();
+            if (c.moveToFirst()) {
 
-        activity td = new activity(activity_id,c.getInt(c.getColumnIndex(KEY_DAY_ID)));
-        td.setHours(c.getInt(c.getColumnIndex(KEY_HOURS)));
-        td.setActivity((c.getString(c.getColumnIndex(KEY_ACTIVITY))));
+                td = new activity(activity_id, c.getLong(c.getColumnIndex(KEY_DAY_ID)));
+                td.setHours(c.getInt(c.getColumnIndex(KEY_HOURS)));
+                td.setActivity((c.getString(c.getColumnIndex(KEY_ACTIVITY))));
+            }
 
         return td;
     }
@@ -167,7 +169,7 @@ public class DbHelper extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                activity td = new activity(c.getInt((c.getColumnIndex(KEY_ACTIVITY_ID))),c.getInt(c.getColumnIndex(KEY_DAY_ID)));
+                activity td = new activity(c.getLong((c.getColumnIndex(KEY_ACTIVITY_ID))),c.getLong(c.getColumnIndex(KEY_DAY_ID)));
                 td.setHours(c.getInt(c.getColumnIndex(KEY_HOURS)));
                 td.setActivity((c.getString(c.getColumnIndex(KEY_ACTIVITY))));
 
@@ -195,7 +197,7 @@ public class DbHelper extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                activity td = new activity(c.getInt((c.getColumnIndex(KEY_ACTIVITY_ID))),c.getInt(c.getColumnIndex(KEY_DAY_ID)));
+                activity td = new activity(c.getLong((c.getColumnIndex(KEY_ACTIVITY_ID))),c.getLong(c.getColumnIndex(KEY_DAY_ID)));
                 td.setHours(c.getInt(c.getColumnIndex(KEY_HOURS)));
                 td.setActivity((c.getString(c.getColumnIndex(KEY_ACTIVITY))));
 
@@ -239,6 +241,20 @@ public class DbHelper extends SQLiteOpenHelper {
         return getCount(TABLE_ACTIVITY);
     }
 
+    /*
+    * insert ArrayList of activities
+    */
+    public void insertActivitiesList(List<activity> activities) {
+        for (int i = 0; i < activities.size(); i++) {
+
+            if (getActivity(activities.get(i).getActivity_ID())!=null)
+                updateActivity(activities.get(i));
+            else
+                createActivity(activities.get(i));
+        }
+    }
+
+
 
     // ------------------------ "day" table methods ----------------//
 
@@ -269,7 +285,7 @@ public class DbHelper extends SQLiteOpenHelper {
     /*
      * get single day
      */
-    public day getDay(long day_id) {
+    public day getDay_byID(long day_id) {
         SQLiteDatabase db = this.getReadableDatabase();
 
         String selectQuery = "SELECT * FROM " + TABLE_DAY + " WHERE "
@@ -278,15 +294,43 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.e(LOG, selectQuery);
 
         Cursor c = db.rawQuery(selectQuery, null);
+        day td = null;
 
-        if (c != null)
-            c.moveToFirst();
+        if( c != null)
+            if (c.moveToFirst()) {
 
-        day td = new day(day_id,c.getInt(c.getColumnIndex(KEY_WORKWEEK_ID)));
-        td.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
-        td.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
-        td.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
-        td.setWeekday(c.getInt(c.getColumnIndex(KEY_WEEKDAY)));
+                td = new day(day_id, c.getInt(c.getColumnIndex(KEY_WEEKDAY)), c.getLong(c.getColumnIndex(KEY_WORKWEEK_ID)));
+                td.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
+                td.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
+                td.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
+            }
+
+        return td;
+    }
+
+    /*
+     * get single day by week_ID and weekday
+     */
+    public day getDay(int weekday, long week_ID) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String selectQuery = "SELECT * FROM " + TABLE_DAY + " WHERE "
+                + KEY_WEEKDAY + " = " + weekday + " AND "
+                + KEY_WORKWEEK_ID + " = " + week_ID;
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery, null);
+        day td = null;
+
+        if( c != null)
+            if (c.moveToFirst()) {
+
+                td = new day(c.getLong(c.getColumnIndex(KEY_DAY_ID)), weekday, week_ID);
+                td.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
+                td.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
+                td.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
+            }
 
         return td;
     }
@@ -306,11 +350,10 @@ public class DbHelper extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                day t = new day(c.getInt((c.getColumnIndex(KEY_DAY_ID))),c.getInt(c.getColumnIndex(KEY_WORKWEEK_ID)));
+                day t = new day(c.getLong((c.getColumnIndex(KEY_DAY_ID))), c.getInt(c.getColumnIndex(KEY_WEEKDAY)), c.getLong(c.getColumnIndex(KEY_WORKWEEK_ID)));
                 t.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
                 t.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
                 t.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
-                t.setWeekday(c.getInt(c.getColumnIndex(KEY_WEEKDAY)));
 
                 // adding to days list
                 days.add(t);
@@ -335,11 +378,10 @@ public class DbHelper extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                day t = new day(c.getInt((c.getColumnIndex(KEY_DAY_ID))),c.getInt(c.getColumnIndex(KEY_WORKWEEK_ID)));
+                day t = new day(c.getLong((c.getColumnIndex(KEY_DAY_ID))), c.getInt(c.getColumnIndex(KEY_WEEKDAY)), c.getLong(c.getColumnIndex(KEY_WORKWEEK_ID)));
                 t.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
                 t.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
                 t.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
-                t.setWeekday(c.getInt(c.getColumnIndex(KEY_WEEKDAY)));
 
                 // adding to days list
                 days.add(t);
@@ -390,7 +432,14 @@ public class DbHelper extends SQLiteOpenHelper {
                 new String[] { String.valueOf(day.getDay_ID()) });
     }
 
-    // ------------------------ "workweek" table methods ----------------//
+    /*
+    * getting count for days
+    */
+    public int getCountDay() {
+        return getCount(TABLE_DAY);
+    }
+
+        // ------------------------ "workweek" table methods ----------------//
 
     /*
      * Creating workweek
@@ -400,8 +449,8 @@ public class DbHelper extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(KEY_WORKWEEK_ID, workweek.getWeek_ID());
-        values.put(KEY_WEEK_START, workweek.getWeek_start());
-        values.put(KEY_WEEK_END, workweek.getWeek_end());
+        values.put(KEY_WEEK_START, workweek.getWeek_start_long());
+        //values.put(KEY_WEEK_END, workweek.getWeek_end());
         values.put(KEY_YEAR_OF_TRAINING, workweek.getYear_of_training());
         values.put(KEY_COMMENT, workweek.getComment());
         values.put(KEY_CREATED_AT, getDateTime());
@@ -423,15 +472,18 @@ public class DbHelper extends SQLiteOpenHelper {
         Log.e(LOG, selectQuery);
 
         Cursor c = db.rawQuery(selectQuery, null);
+        workweek td = null;
 
-        if (c != null)
-            c.moveToFirst();
+        if( c != null) {
+            if (c.moveToFirst()) {
 
-        workweek td = new workweek(workweek_id);
-        td.setWeek_start(c.getString(c.getColumnIndex(KEY_WEEK_START)));
-        td.setWeek_end(c.getString(c.getColumnIndex(KEY_WEEK_END)));
-        td.setYear_of_training((c.getInt(c.getColumnIndex(KEY_YEAR_OF_TRAINING))));
-        td.setComment(c.getString(c.getColumnIndex(KEY_COMMENT)));
+                td = new workweek(workweek_id);
+                td.setWeek_start_long(c.getLong(c.getColumnIndex(KEY_WEEK_START)));
+                //td.setWeek_end(c.getString(c.getColumnIndex(KEY_WEEK_END)));
+                td.setYear_of_training((c.getInt(c.getColumnIndex(KEY_YEAR_OF_TRAINING))));
+                td.setComment(c.getString(c.getColumnIndex(KEY_COMMENT)));
+            }
+        }
 
         return td;
     }
@@ -451,9 +503,9 @@ public class DbHelper extends SQLiteOpenHelper {
         // looping through all rows and adding to list
         if (c.moveToFirst()) {
             do {
-                workweek t = new workweek(c.getInt(c.getColumnIndex(KEY_WORKWEEK_ID)));
-                t.setWeek_start(c.getString(c.getColumnIndex(KEY_WEEK_START)));
-                t.setWeek_end(c.getString(c.getColumnIndex(KEY_WEEK_END)));
+                workweek t = new workweek(c.getLong(c.getColumnIndex(KEY_WORKWEEK_ID)));
+                t.setWeek_start_long(c.getLong(c.getColumnIndex(KEY_WEEK_START)));
+                //t.setWeek_end(c.getString(c.getColumnIndex(KEY_WEEK_END)));
                 t.setYear_of_training(c.getInt(c.getColumnIndex(KEY_YEAR_OF_TRAINING)));
                 t.setComment(c.getString(c.getColumnIndex(KEY_COMMENT)));
 
@@ -471,8 +523,8 @@ public class DbHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_WEEK_START, workweek.getWeek_start());
-        values.put(KEY_WEEK_END, workweek.getWeek_end());
+        values.put(KEY_WEEK_START, workweek.getWeek_start_long());
+        //values.put(KEY_WEEK_END, workweek.getWeek_end());
         values.put(KEY_YEAR_OF_TRAINING, workweek.getYear_of_training());
         values.put(KEY_COMMENT, workweek.getComment());
         values.put(KEY_CREATED_AT, getDateTime());
@@ -507,8 +559,8 @@ public class DbHelper extends SQLiteOpenHelper {
     }
 
     /*
-         * getting count for workweek
-         */
+    * getting count for workweek
+    */
     public int getCountWorkweek() {
         return getCount(TABLE_WORKWEEK);
     }
