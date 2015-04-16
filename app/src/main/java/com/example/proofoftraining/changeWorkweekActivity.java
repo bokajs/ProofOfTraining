@@ -37,6 +37,8 @@ public class changeWorkweekActivity extends ActionBarActivity {
         final workweekParcelable workweekParcelable = intent.getParcelableExtra(MainActivity.EXTRA_MESSAGE_workweekParcelable);
         ((EditText) findViewById(R.id.week_ID)).setText(
                 String.valueOf(workweekParcelable.getWeek_ID()));
+        (findViewById(R.id.week_ID)).setEnabled(false);
+        (findViewById(R.id.week_ID)).setFocusable(false);
 
 
         if (Integer.parseInt(intent.getStringExtra(MainActivity.EXTRA_MESSAGE_week_new))==1)
@@ -65,7 +67,7 @@ public class changeWorkweekActivity extends ActionBarActivity {
                     setResult(RESULT_OK, intent);
                     finish();
                 } else
-                    ((EditText) findViewById(R.id.year_of_training)).setError( "" );
+                    ((EditText) findViewById(R.id.year_of_training)).setError(getString(R.string.year_of_training_error));
             }
         });
 

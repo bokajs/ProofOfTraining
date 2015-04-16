@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group android:checkableBehavior="all">
-        <item android:id="@+id/action_leave"
+    <group android:checkableBehavior="single"
+        android:id="@+id/group_away">
+        <item android:id="@+id/action_away_leave"
             android:title="@string/leave" />
-        <item android:id="@+id/sick"
+        <item android:id="@+id/action_away_sick"
             android:title="@string/sick" />
-        <item android:id="@+id/other"
+        <item android:id="@+id/action_away_other"
             android:title="@string/other" />
     </group>
 </menu>

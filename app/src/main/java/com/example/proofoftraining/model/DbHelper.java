@@ -46,9 +46,10 @@ public class DbHelper extends SQLiteOpenHelper  {
 
     // DAY Table - column names
     private static final String KEY_DAY_ID = "day_id";
-    private static final String KEY_LEAVE = "leave";
+    /*private static final String KEY_LEAVE = "leave";
     private static final String KEY_SICK = "sick";
-    private static final String KEY_OTHER = "other";
+    private static final String KEY_OTHER = "other";*/
+    private static final String KEY_ABSENT_DAY = "absent_day";
     private static final String KEY_WEEKDAY = "weekday";
 
     // WORKWEEK Table - column names
@@ -67,8 +68,9 @@ public class DbHelper extends SQLiteOpenHelper  {
 
     // Day table create statement
     private static final String CREATE_TABLE_DAY = "CREATE TABLE " + TABLE_DAY
-            + "(" + KEY_DAY_ID + " INTEGER PRIMARY KEY," + KEY_LEAVE + " INTEGER,"
-            + KEY_SICK + " INTEGER," + KEY_OTHER + " INTEGER,"+ KEY_WEEKDAY + " INTEGER,"
+            + "(" + KEY_DAY_ID + " INTEGER PRIMARY KEY," //+ KEY_LEAVE + " INTEGER,"
+            //+ KEY_SICK + " INTEGER," + KEY_OTHER + " INTEGER,"
+            + KEY_ABSENT_DAY + " INTEGER," + KEY_WEEKDAY + " INTEGER,"
             + KEY_WORKWEEK_ID + " INTEGER," + KEY_CREATED_AT + " DATETIME" + ")";
 
     // workweek table create statement
@@ -266,11 +268,9 @@ public class DbHelper extends SQLiteOpenHelper  {
 
         ContentValues values = new ContentValues();
         values.put(KEY_DAY_ID, day.getDay_ID());
-        values.put(KEY_LEAVE, day.getLeave());
-        values.put(KEY_SICK, day.getSick());
-        values.put(KEY_OTHER, day.getOther());
+        values.put(KEY_ABSENT_DAY, day.getAbsent_day());
         values.put(KEY_WEEKDAY, day.getWeekday());
-        values.put(KEY_WORKWEEK_ID, day.getWeekday());
+        values.put(KEY_WORKWEEK_ID, day.getWeek_ID());
         values.put(KEY_CREATED_AT, getDateTime());
 
         // insert row
@@ -300,9 +300,7 @@ public class DbHelper extends SQLiteOpenHelper  {
             if (c.moveToFirst()) {
 
                 td = new day(day_id, c.getInt(c.getColumnIndex(KEY_WEEKDAY)), c.getLong(c.getColumnIndex(KEY_WORKWEEK_ID)));
-                td.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
-                td.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
-                td.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
+                td.setAbsent_day(c.getInt(c.getColumnIndex(KEY_ABSENT_DAY)));
             }
 
         return td;
@@ -327,9 +325,7 @@ public class DbHelper extends SQLiteOpenHelper  {
             if (c.moveToFirst()) {
 
                 td = new day(c.getLong(c.getColumnIndex(KEY_DAY_ID)), weekday, week_ID);
-                td.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
-                td.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
-                td.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
+                td.setAbsent_day(c.getInt(c.getColumnIndex(KEY_ABSENT_DAY)));
             }
 
         return td;
@@ -351,9 +347,7 @@ public class DbHelper extends SQLiteOpenHelper  {
         if (c.moveToFirst()) {
             do {
                 day t = new day(c.getLong((c.getColumnIndex(KEY_DAY_ID))), c.getInt(c.getColumnIndex(KEY_WEEKDAY)), c.getLong(c.getColumnIndex(KEY_WORKWEEK_ID)));
-                t.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
-                t.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
-                t.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
+                t.setAbsent_day(c.getInt(c.getColumnIndex(KEY_ABSENT_DAY)));
 
                 // adding to days list
                 days.add(t);
@@ -379,9 +373,7 @@ public class DbHelper extends SQLiteOpenHelper  {
         if (c.moveToFirst()) {
             do {
                 day t = new day(c.getLong((c.getColumnIndex(KEY_DAY_ID))), c.getInt(c.getColumnIndex(KEY_WEEKDAY)), c.getLong(c.getColumnIndex(KEY_WORKWEEK_ID)));
-                t.setLeave(c.getInt(c.getColumnIndex(KEY_LEAVE)));
-                t.setSick(c.getInt(c.getColumnIndex(KEY_SICK)));
-                t.setOther(c.getInt(c.getColumnIndex(KEY_OTHER)));
+                t.setAbsent_day(c.getInt(c.getColumnIndex(KEY_ABSENT_DAY)));
 
                 // adding to days list
                 days.add(t);
@@ -397,9 +389,7 @@ public class DbHelper extends SQLiteOpenHelper  {
         SQLiteDatabase db = this.getWritableDatabase();
 
         ContentValues values = new ContentValues();
-        values.put(KEY_LEAVE, day.getLeave());
-        values.put(KEY_SICK, day.getSick());
-        values.put(KEY_OTHER, day.getOther());
+        values.put(KEY_ABSENT_DAY, day.getAbsent_day());
         values.put(KEY_WEEKDAY, day.getWeekday());
         values.put(KEY_WORKWEEK_ID, day.getWeek_ID());
 

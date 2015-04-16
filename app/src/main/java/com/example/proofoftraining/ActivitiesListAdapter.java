@@ -77,11 +77,13 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 holder.activities.setActivity(s.toString());
+                update_activities(holder);
             }
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
             @Override
-            public void afterTextChanged(Editable s) { }
+            public void afterTextChanged(Editable s) {
+            }
         });
     }
     private void setHoursTextListeners(final ActivitiesHolder holder) {
@@ -93,6 +95,7 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
                 }catch (NumberFormatException e) {
                     Log.e(LOG_TAG, "error reading activity hour: " + s.toString());
                 }
+                update_activities(holder);
             }
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
@@ -102,5 +105,12 @@ public class ActivitiesListAdapter extends ArrayAdapter<activity> {
     }
     public List<activity> getActivity() {
         return activity;
+    }
+
+    private void update_activities(final ActivitiesHolder holder) {
+        if (MainActivity.db.getActivity(holder.activities.getActivity_ID())!=null)
+            MainActivity.db.updateActivity(holder.activities);
+        else
+            MainActivity.db.createActivity(holder.activities);
     }
 }

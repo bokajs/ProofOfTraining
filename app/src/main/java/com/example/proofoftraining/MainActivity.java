@@ -50,7 +50,8 @@ public class MainActivity extends ActionBarActivity
     private CharSequence mTitle;
 
     // Database Helper
-    DbHelper db;
+    //public, because the ActivitiesListAdapter work with
+    public static DbHelper db;
 
     //count of week for the Drawer menu
     public static int weeks;
@@ -80,17 +81,6 @@ public class MainActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-     /* Test
-        // creating and insert day
-        day day0 = new day(0,0);
-        long day0_id = db.createDay(day0);
-
-        // creating and insert activity
-        activity activity0 = new activity(0,0);
-        long activity0_id = db.createActivity(activity0);
-
-        //List<workweek> workweeks = db.getAllWorkweeks(); */
-
         mNavigationDrawerFragment = (NavigationDrawerFragment)
                 getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         mTitle = getTitle();
@@ -110,6 +100,8 @@ public class MainActivity extends ActionBarActivity
         AddTab("Sat", "Saturday",6);
         AddTab("Sun", "Sunday",7);
 
+        // close database connection
+        db.closeDB();
     }
 
     //menu to select the week of work
@@ -132,7 +124,6 @@ public class MainActivity extends ActionBarActivity
 
             //selected_workweek = new workweek(0);
         }
-        int a;
     }
 
     //Callback from the changeWorkweekActivity with new workweek object
@@ -169,14 +160,16 @@ public class MainActivity extends ActionBarActivity
                                     if ((selected_day = db.getDay(weekday,selected_workweek.getWeek_ID()))==null) {
                                         selected_day = new day(db.getCountDay()+1, weekday, selected_workweek.getWeek_ID());
                                         db.createDay(selected_day);
-
-                                        //Set up the Activity List
-                                        setupActivityListViewAdapter();
                                     }
+
+                                //Set up the Activity List
+                                setupActivityListViewAdapter();
                             }
 
                             @Override
                             public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
+                                //delete activitiesListAdapter
+                                activitiesListAdapter=null;
                                 selected_day=null;
                             }
 
@@ -222,13 +215,53 @@ public class MainActivity extends ActionBarActivity
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        final int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
        if (id == R.id.action_menu2_away) {
-           PopupMenu popup = new PopupMenu(this, findViewById(R.id.action_menu2_away));
+           final PopupMenu popup = new PopupMenu(this, findViewById(R.id.action_menu2_away));
            MenuInflater inflater = popup.getMenuInflater();
            inflater.inflate(R.menu.main2_away, popup.getMenu());
+
+           switch (selected_day.getAbsent_day()) {
+               case 1:
+                   popup.getMenu().findItem(R.id.action_away_leave).setChecked(true);
+                   break;
+               case 2:
+                   popup.getMenu().findItem(R.id.action_away_sick).setChecked(true);
+                   break;
+               case 3:
+                   popup.getMenu().findItem(R.id.action_away_other).setChecked(true);
+                   break;
+           }
+
+           //Add present Item to the menu2_away, if an away Item is selected
+           if (selected_day.getAbsent_day()!=0) {
+               popup.getMenu().add(R.id.group_away, 0, 0, getString(R.string.menu2_away_present));
+
+           }
+
+           popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+               public boolean onMenuItemClick(MenuItem item) {
+                   switch (item.getItemId()) {
+                       default:
+                           selected_day.setAbsent_day(0);
+                           break;
+                       case R.id.action_away_leave:
+                           selected_day.setAbsent_day(1);
+                           break;
+                       case R.id.action_away_sick:
+                           selected_day.setAbsent_day(2);
+                           break;
+                       case R.id.action_away_other:
+                           selected_day.setAbsent_day(3);
+                           break;
+                   }
+                   db.updateDay(selected_day);
+                   return true;
+               }
+           });
+
            popup.show();
 
            return true;
@@ -237,7 +270,10 @@ public class MainActivity extends ActionBarActivity
        if (id == R.id.action_activity_add) {
            //Ads a new activity
            activity activity = new activity(db.getCountActivities()+1,selected_day.getDay_ID());
-           activity.setActivity("");
+           if (selected_day.getAbsent_day()==0)
+               activity.setActivity("");
+           else
+                activity.setActivity(getString(R.string.activity_activity_away));
            activitiesListAdapter.insert(activity,0);
            return true;
        }
@@ -320,20 +356,12 @@ public class MainActivity extends ActionBarActivity
     public void removeActivityOnClickHandler(View v) {
         activity itemToRemove = (activity)v.getTag();
         activitiesListAdapter.remove(itemToRemove);
+        db.deleteActivity(itemToRemove.getActivity_ID());
     }
     private void setupActivityListViewAdapter() {
         activitiesListAdapter = new ActivitiesListAdapter(MainActivity.this, R.layout.item_activities, db.getAllActivityByDay_ID(selected_day.getDay_ID()));
         final ListView ActivitiesListView = (ListView)findViewById(R.id.listView_activities);
         ActivitiesListView.setAdapter(activitiesListAdapter);
-
-        ActivitiesListView.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-
-                Toast.makeText(MainActivity.this,
-                        "Item in position " + position + " clicked", Toast.LENGTH_LONG).show();
-            }
-        });
     }
 
 

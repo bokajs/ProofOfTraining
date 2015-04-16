@@ -20,5 +20,7 @@
     <string name="activity_activity_hint">activity description</string>
     <string name="action_change_workweek">Change workweek</string>
     <string name="hours_h">h</string>
+    <string name="menu2_away_present">present</string>
+    <string name="activity_activity_away">away</string>
 
 </resources>

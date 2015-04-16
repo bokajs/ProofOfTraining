@@ -10,7 +10,8 @@ public class day {
     //variables declarer
     long day_ID, week_ID;
     int weekday;
-    int leave, sick, other;
+    //int leave, sick, other;
+    int absent_day; //0=false, 1=leave, 2=sick, 3=other
     private ArrayList<activity> activities = new ArrayList<activity>();
 
     //constructor
@@ -37,7 +38,7 @@ public class day {
         this.weekday = weekday;
     }*/
 
-    public int getLeave() {
+    /*public int getLeave() {
         return leave;
     }
 
@@ -59,6 +60,14 @@ public class day {
 
     public void setOther(int other) {
         this.other = other;
+    }*/
+
+    public void setAbsent_day(int absent_day) {
+        this.absent_day = absent_day;
+    }
+
+    public int getAbsent_day() {
+        return absent_day;
     }
 
     public ArrayList<activity> getActivities() {
